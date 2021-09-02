@@ -5,6 +5,8 @@ import {
   CURRENCY_CHANGED,
   RELOAD_OPERATIONS,
   SET_TOTAL_AMOUNT,
+  DELETE_OPERATION,
+  EDIT_OPERATION,
 } from "../actions/actionsForFinance";
 
 const initialFinanceStore = {
@@ -33,6 +35,26 @@ function reducerForFinance(state = initialFinanceStore, action) {
   }
   if (action.type === RELOAD_OPERATIONS) {
     return { ...state, operations: [...action.payload.operations] };
+  }
+  if (action.type === DELETE_OPERATION) {
+    let ops = state.operations.filter((item) => item[0] !== action.payload.id);
+    localStorage.setItem("operations", JSON.stringify([...ops]));
+    return { ...state, operations: ops };
+  }
+  if (action.type === EDIT_OPERATION) {
+    let index = state.operations.findIndex(
+      (item) => item[0] === action.payload.id
+    );
+    let ops = state.operations;
+    ops[index] = [
+      action.payload.id,
+      action.payload.entranceType,
+      action.payload.entranceAmount,
+      action.payload.currency,
+      action.payload.entranceExplanation,
+    ];
+    localStorage.setItem("operations", JSON.stringify([...ops]));
+    return { ...state, operations: ops };
   }
   if (action.type === NEW_OPERATION) {
     localStorage.setItem(
