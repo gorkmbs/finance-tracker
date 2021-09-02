@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 
-const Navbar = ({ rates, operations, currency }) => {
+const Navbar = ({ rates, operations, currency, total }) => {
   return (
     <>
       <div
@@ -12,8 +12,13 @@ const Navbar = ({ rates, operations, currency }) => {
           <h4 className="text-blue-100 text-xl font-serif">Finance Tracker</h4>
         </div>
         <div>
-          <p className="text-green-200 text-lg font-mono">
-            Balance: {currency}
+          <p
+            className={`${
+              Number(total) >= 0 ? "text-green-200" : "text-red-200"
+            } text-lg font-mono`}
+          >
+            Balance: {total}
+            {currency}
           </p>
         </div>
       </div>
@@ -22,8 +27,8 @@ const Navbar = ({ rates, operations, currency }) => {
 };
 
 const mapStateToProps = (state) => {
-  const { rates, operations, currency } = state.finance;
-  return { rates, operations, currency };
+  const { rates, operations, currency, total } = state.finance;
+  return { rates, operations, currency, total };
 };
 
 export default connect(mapStateToProps)(Navbar);

@@ -1,7 +1,11 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { connect } from "react-redux";
 import { Dialog, Transition } from "@headlessui/react";
-import { NEW_OPERATION, CURRENCY_CHANGED } from "../actions/actionsForFinance";
+import {
+  NEW_OPERATION,
+  CURRENCY_CHANGED,
+  SET_TOTAL_AMOUNT,
+} from "../actions/actionsForFinance";
 
 const Dashboard = ({
   rates,
@@ -9,18 +13,53 @@ const Dashboard = ({
   currency,
   setCurrency,
   setNewOperation,
+  setTotal,
 }) => {
   const [currencyValue, setCurrencyValue] = useState(currency);
   const [validCurrency, setValidCurrency] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [showEntranceModal, setShowEntranceModal] = useState(true);
+  const [showEntranceModal, setShowEntranceModal] = useState(false);
   const [incomesTotal, setIncomesTotal] = useState(0);
   const [expensesTotal, setExpensesTotal] = useState(0);
   const [entranceType, setEntranceType] = useState("");
-  const [entranceAmount, setEntranceAmount] = useState(0);
+  const [entranceAmount, setEntranceAmount] = useState("");
   const [entranceExplanation, setEntranceExplanation] = useState("");
 
   const [submitDisabled, setSubmitDisabled] = useState(true);
+
+  useEffect(() => {
+    // console.log(rates);
+    let totalIncome = operations.reduce((total, item) => {
+      if (item[1] === "Income") {
+        let itemRate = String(
+          rates.filter((rate) => rate[0] === String(item[3]))
+        ).split(",")[1];
+        let baseRate = String(
+          rates.filter((rate) => rate[0] === String(currency))
+        ).split(",")[1];
+        // console.log("item:" + itemRate + " base:" + baseRate);
+        total += (item[2] * Number(baseRate)) / Number(itemRate);
+      }
+      return total;
+    }, 0);
+    let totalExpense = operations.reduce((total, item) => {
+      if (item[1] === "Expense") {
+        let itemRate = String(
+          rates.filter((rate) => rate[0] === String(item[3]))
+        ).split(",")[1];
+        let baseRate = String(
+          rates.filter((rate) => rate[0] === String(currency))
+        ).split(",")[1];
+        // console.log("item:" + itemRate + " base:" + baseRate);
+        total += (item[2] * Number(baseRate)) / Number(itemRate);
+      }
+      return total;
+    }, 0);
+    setIncomesTotal(totalIncome);
+    setExpensesTotal(totalExpense);
+    setTotal(totalIncome - totalExpense);
+    // eslint-disable-next-line
+  }, [operations, currency]);
 
   useEffect(() => {
     let valid = true;
@@ -31,7 +70,7 @@ const Dashboard = ({
     if (!validCurrency) {
       valid = false;
     }
-    if (entranceExplanation.length < 1) {
+    if (entranceExplanation.length < 1 || entranceExplanation.length > 30) {
       valid = false;
     }
     setSubmitDisabled(!valid);
@@ -40,12 +79,13 @@ const Dashboard = ({
   const submitHandler = () => {
     setNewOperation(
       entranceType,
-      entranceAmount,
+      Number(entranceAmount),
       currency,
       entranceExplanation
     );
-    setEntranceAmount(0);
+    setEntranceAmount("");
     setEntranceExplanation("");
+    setShowEntranceModal(false);
   };
 
   useEffect(() => {
@@ -113,13 +153,7 @@ const Dashboard = ({
                   />
                   <datalist id="currencies">
                     {rates.map((rate, index) => {
-                      return (
-                        <option
-                          key={index}
-                          value={rate[0]}
-                          selected={rate[0] === "EUR" ? true : false}
-                        />
-                      );
+                      return <option key={index} value={rate[0]} />;
                     })}
                   </datalist>
                 </span>
@@ -146,7 +180,34 @@ const Dashboard = ({
             </h4>
           </div>
         </div>
-        <div className="m-0 w-full md:h-auto md:w-3/4  "></div>
+        <div className="m-0 w-full md:h-auto md:w-3/4  ">
+          <div className="flex w-full justify-end mt-4 pr-2 md:pr-8">
+            <div>Filter</div>
+            <div>Currency</div>
+            <div>Clear</div>
+          </div>
+          <div className="flex justify-center items-center w-full mt-4">
+            <div>
+              {operations
+                .slice(0)
+                .reverse()
+                .map((item) => {
+                  return (
+                    <div
+                      key={item[0]}
+                      className={`${
+                        item[1] === "Income" ? "bg-green-200" : "bg-red-200"
+                      } text-gray-900 p-4 rounded-xl my-4`}
+                      style={{ maxWidth: "80vw", width: "500px" }}
+                    >
+                      Type: {item[1]}, Amount: {item[2]}
+                      {item[3]}, Explanation: {item[4]}
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
       </div>
       <Transition appear show={showEntranceModal} as={Fragment}>
         <Dialog
@@ -291,6 +352,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     setCurrency: (currency) => {
       dispatch({ type: CURRENCY_CHANGED, payload: { currency } });
+    },
+    setTotal: (total) => {
+      dispatch({ type: SET_TOTAL_AMOUNT, payload: { total } });
     },
     setNewOperation: (
       entranceType,

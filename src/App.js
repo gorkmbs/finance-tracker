@@ -10,6 +10,7 @@ import {
   DATE_UPDATED,
   RATES_UPDATED,
   CURRENCY_CHANGED,
+  RELOAD_OPERATIONS,
 } from "./actions/actionsForFinance";
 import Dashboard from "./pages/Dashboard";
 import Error from "./pages/Error";
@@ -27,7 +28,8 @@ function App() {
     let updateTime = localStorage.getItem("updateTime");
     let rates = localStorage.getItem("rates");
     let currency = localStorage.getItem("currency");
-    // console.log(JSON.parse(rates));
+    let operations = localStorage.getItem("operations");
+    // console.log(JSON.parse(operations));
 
     if (
       updateTime === null ||
@@ -70,6 +72,14 @@ function App() {
           currency: JSON.parse(currency),
         },
       });
+      if (operations !== null) {
+        store.dispatch({
+          type: RELOAD_OPERATIONS,
+          payload: {
+            operations: JSON.parse(operations),
+          },
+        });
+      }
 
       // console.log(store.getState().finance.rates);
     }
