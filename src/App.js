@@ -38,8 +38,9 @@ function App() {
     ) {
       axios({
         method: "get",
-        url: store.getState().site.financeAPI,
+        url: "https://tamzirtapoz.herokuapp.com/users/finance",
       }).then(function (response) {
+        console.log(response.data.finance);
         store.dispatch({
           type: DATE_UPDATED,
           payload: { date: Date.now() },
@@ -47,9 +48,9 @@ function App() {
         store.dispatch({
           type: RATES_UPDATED,
           payload: {
-            rates: Object.keys(response.data.rates).map((key) => [
+            rates: Object.keys(response.data.finance).map((key) => [
               String(key),
-              Number(response.data.rates[key]),
+              Number(response.data.finance[key]),
             ]),
           },
         });
