@@ -38,7 +38,7 @@ function App() {
     ) {
       axios({
         method: "get",
-        url: "https://tamzirtapoz.herokuapp.com/users/finance",
+        url: "https://redterrex.onrender.com/users/finance",
       }).then(function (response) {
         console.log(response.data.finance);
         store.dispatch({
